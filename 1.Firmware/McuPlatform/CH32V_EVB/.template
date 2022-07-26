@@ -1,0 +1,16 @@
+Mcu Type=CH32V30x
+Target Path=obj\IoT_3DPrinter.hex
+Address=0x08000000
+Erase All=true
+Program=true
+Verify=true
+Reset=true
+
+Vendor=WCH
+Link=WCH-Link
+Toolchain=RISC-V
+Series=CH32V307
+Description=TencentOS is a series of operating systems independently developed by Tencent, mainly including TS (TencentOS server operating system), TT (TencentOS tiny Internet of things operating system) and te (TencentOS edge computing operating system). It provides a full stack OS layout based on business scenarios for the three subsystems of computing storage network (cloud data center, edge and Internet of things)
+
+PeripheralVersion=1.7
+MCU=TencentOS

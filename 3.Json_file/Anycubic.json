@@ -1,0 +1,164 @@
+{
+    "version": "1.0",
+    "properties": [
+      {
+        "id": "power_switch",
+        "name": "灯光",
+        "desc": "控制灯光",
+        "mode": "rw",
+        "required": true,
+        "define": {
+          "type": "bool",
+          "mapping": {
+            "0": "关灯",
+            "1": "开灯"
+          }
+        }
+      },
+      {
+        "id": "printing_control",
+        "name": "3D打印机控制",
+        "desc": "3D打印机控制",
+        "mode": "rw",
+        "define": {
+          "type": "enum",
+          "mapping": {
+            "0": "指令回应",
+            "1": "PLA预热",
+            "2": "ABS预热",
+            "3": "降温",
+            "4": "X轴移动正10",
+            "5": "X轴移动负10",
+            "6": "Y轴移动正10",
+            "7": "Y轴移动负10",
+            "8": "Z轴移动正10",
+            "9": "Z轴移动负10",
+            "10": "X轴归零",
+            "11": "Y轴归零",
+            "12": "Z轴归零",
+            "13": "全部归零",
+            "14": "调平数据",
+            "15": "开始打印"
+          }
+        },
+        "required": false
+      },
+      {
+        "id": "axis_text",
+        "name": "显示位置信息",
+        "desc": "位置",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "nozzle_temp",
+        "name": "喷头温度",
+        "desc": "摄氏度",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "hotbed_temp",
+        "name": "热床温度",
+        "desc": "摄氏度",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "levelDataStatus",
+        "name": "获取调平数据状态",
+        "desc": "N/A",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "level1_data",
+        "name": "调平数据1",
+        "desc": "N/A",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "level2_data",
+        "name": "调平数据2",
+        "desc": "N/A",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "level3_data",
+        "name": "调平数据3",
+        "desc": "N/A",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "level4_data",
+        "name": "调平数据4",
+        "desc": "N/A",
+        "mode": "r",
+        "define": {
+          "type": "string",
+          "min": "0",
+          "max": "2048"
+        },
+        "required": false
+      },
+      {
+        "id": "fan_speed",
+        "name": "风扇速度",
+        "desc": "",
+        "mode": "rw",
+        "define": {
+          "type": "int",
+          "min": "0",
+          "max": "100",
+          "start": "0",
+          "step": "1",
+          "unit": "风速"
+        },
+        "required": false
+      }
+    ],
+    "events": [],
+    "actions": [],
+    "profile": {
+      "ProductId": "99LPJ2KWLM",
+      "CategoryId": "539"
+    }
+  }
