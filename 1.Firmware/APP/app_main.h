@@ -10,25 +10,6 @@ typedef struct ap_info
 	char rssi[10] ;
 }ap_info;
 
-typedef struct mqtt_report_info
-{
-	double hotend_cur;
-	double hotend_target;
-	double hotbed_cur;
-	double hotbed_target;
-	float X;
-	float Y;
-	float Z;
-}report_info;
-
-typedef struct mqtt_leveling_data
-{
-	char leveling_data1[30];
-	char leveling_data2[30];
-	char leveling_data3[30];
-	char leveling_data4[30];
-}report_leveling_data;
-
 typedef struct GCodeCmdHandler_t
 {
 	uint8_t Index;
@@ -99,23 +80,6 @@ enum MAPPING_CONTROL
 	PRINTER_LEVEING_GET,//调平数据获取
 	PRINTER_PRINTING    //开始打印
 };
-
-#define GCODE_PLA_PRE 	  	  "M140 S60\nM104 S190\n"
-#define GCODE_ABS_PRE 	  	  "M140 S100\nM104 S240\n"
-#define GCODE_TEMP_DROP 	  "M140 S0\nM104 S0\n"
-#define GCODE_X_MOVE_ADD 	  "G91\nG1 F1500 X+10\nG90\nM114\n"
-#define GCODE_X_MOVE_SUB      "G91\nG1 F1500 X-10\nG90\nM114\n"
-#define GCODE_Y_MOVE_ADD 	  "G91\nG1 F1500 Y+10\nG90\nM114\n"
-#define GCODE_Y_MOVE_SUB      "G91\nG1 F1500 Y-10\nG90\nM114\n"
-#define GCODE_Z_MOVE_ADD 	  "G91\nG1 F1500 Z+10\nG90\nM114\nM114\n"
-#define GCODE_Z_MOVE_SUB      "G91\nG1 F1500 Z-10\nG90\nM114\nM114\n"
-#define GCODE_ZERO_OF_X	      "G28 X\n"
-#define GCODE_ZERO_OF_Y	      "G28 Y\n"
-#define GCODE_ZERO_OF_Z	      "G28 Z\n"
-#define GCODE_ZERO_OF_ALL	  "G28\n"
-#define GCODE_LEVELING_DATA   "M420V\n"
-#define GCODE_FAN_SETTING 	  "M106 S%d\n"
-#define GCODE_START_PRINT     "M23 TENCEN~1.GCO\nM24\n"
 
 #define DEBUG_GET_TEMP_LED(STATUS)	\
 		do{	\

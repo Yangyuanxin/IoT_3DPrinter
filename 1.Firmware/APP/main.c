@@ -10,12 +10,9 @@
 #include "app_main.h"
 #include "SystemConfig.h"
 
-marlin_temp temp;
-marlin_coordinate axis;
 __IO uint8_t MqttInitFlag = 0;
-extern report_info report_printer_info;
-extern report_leveling_data leveling_data;
-static void DisplayPrinterInfo(enum MsgCmd_t Cmd);
+static void DisplayTemp(marlin_temp temp);
+static void DisplayAxis(marlin_coordinate axis);
 
 #define DEFAULT_TASK_SIZE 2048
 void StartMainTask(void *pdata);
@@ -46,16 +43,52 @@ void StartNetworkTask(void *pdata)
 }
 
 /*GCode转发线程*/
+GCodeCmdHandler_t Msg2GCodeTab[] =
+{
+	{MSG_2_GCODE_CMD_AUTO_GET_TEMP,GCODE_AUTO_GET_TEMP },
+	{MSG_2_GCODE_CMD_PLA_PRE, GCODE_PLA_PRE },
+	{MSG_2_GCODE_CMD_ABS_PRE, GCODE_ABS_PRE },
+	{MSG_2_GCODE_CMD_TEMP_DROP,GCODE_TEMP_DROP },
+	{MSG_2_GCODE_CMD_X_MOVE_ADD, GCODE_X_MOVE_ADD },
+	{MSG_2_GCODE_CMD_X_MOVE_SUB, GCODE_X_MOVE_SUB },
+	{MSG_2_GCODE_CMD_Y_MOVE_ADD, GCODE_Y_MOVE_ADD },
+	{MSG_2_GCODE_CMD_Y_MOVE_SUB, GCODE_Y_MOVE_SUB },
+	{MSG_2_GCODE_CMD_Z_MOVE_ADD, GCODE_Z_MOVE_ADD },
+	{MSG_2_GCODE_CMD_Z_MOVE_SUB, GCODE_Z_MOVE_SUB },
+	{MSG_2_GCODE_CMD_ZERO_OF_X, GCODE_ZERO_OF_X },
+	{MSG_2_GCODE_CMD_ZERO_OF_Y, GCODE_ZERO_OF_Y },
+	{MSG_2_GCODE_CMD_ZERO_OF_Z, GCODE_ZERO_OF_Z },
+	{MSG_2_GCODE_CMD_ZERO_OF_ALL, GCODE_ZERO_OF_ALL },
+	{MSG_2_GCODE_CMD_LEVEL_DATA, GCODE_LEVELING_DATA },
+	{MSG_2_GCODE_CMD_START_PRINT, GCODE_START_PRINT }
+};
+
 void StartGCodeForWardTask(void *arg)
 {
 	(void) arg;
 	k_err_t err;
+	char *GCode;
 	void *MsgRecv;
+	struct Msg_t Msg;
 	for (;;)
 	{
 		err = tos_msg_q_pend(&GCodeMsg, &MsgRecv, TOS_TIME_FOREVER);
 		if (K_ERR_NONE == err)
-			GCodeForward(MsgRecv, GCode_Send);
+		{
+			memcpy(&Msg, MsgRecv, sizeof(struct Msg_t));
+			if (Msg.Type > MSG_2_GCODE_CMD_START_PRINT)
+				printf("Msg.Type is Unknow!\n");
+			else
+			{
+				if (MSG_2_GCODE_CMD_FAN_SETTING == Msg.Type)
+					GCodeForward(Msg.Data, GCode_Send);
+				else
+				{
+					GCode = Msg2GCodeTab[Msg.Type].GcodeCmd;
+					GCodeForward(GCode, GCode_Send);
+				}
+			}
+		}
 		osDelay(5);
 	}
 }
@@ -71,10 +104,13 @@ void StartMainTask(void *arg)
 	(void) arg;
 	uint8_t data;
 	k_err_t err;
+	struct Msg_t Msg;
+	marlin_temp temp;
+	marlin_coordinate axis;
 	static uint8_t status = 0;
+	static uint8_t getleveldata = 0;
 	static uint8_t parser_count = 0;
 	static uint8_t parser_status = 0;
-
 	osSchedLock();
 	err = tos_msg_q_create(&DataMsg, DataMsgPool, 50);
 	if (K_ERR_NONE != err)
@@ -102,9 +138,12 @@ void StartMainTask(void *arg)
 	parser_count = 0;
 	parser_status = MSG_NORMAL;
 	/*M155 - Temperature Auto-Report*/
-	for(int i = 0 ; i < 3 ; i++)
-		tos_msg_q_post(&GCodeMsg, AUTO_GET_TEMP_MCODE);
-	LCD_ShowPicture(0,190, 240, 50,gImage_icon_for_tencentos_tiny);
+	for (int i = 0; i < 3; i++)
+	{
+		Msg.Type = MSG_2_GCODE_CMD_AUTO_GET_TEMP;
+		tos_msg_q_post(&GCodeMsg, (void *) &Msg);
+	}
+	LCD_ShowPicture(0, 190, 240, 50, gImage_icon_for_tencentos_tiny);
 	for (;;)
 	{
 		if (0 == ring_buffer_read(&data, &Fifo))
@@ -114,8 +153,9 @@ void StartMainTask(void *arg)
 						data;
 			else
 			{
-				GCodeReplyBuff.GCodeLineBuff[GCodeReplyBuff.GCodeLineCount] ='\0';
-				printf("reply:%s\n",GCodeReplyBuff.GCodeLineBuff);
+				GCodeReplyBuff.GCodeLineBuff[GCodeReplyBuff.GCodeLineCount] =
+						'\0';
+				printf("reply:%s\n", GCodeReplyBuff.GCodeLineBuff);
 				status = !status;
 				DEBUG_GET_TEMP_LED(status);
 				if ((GCodeReplyBuff.GCodeLineBuff[0] == ' '
@@ -123,81 +163,58 @@ void StartMainTask(void *arg)
 						|| GCodeReplyBuff.GCodeLineBuff[3] == 'T')
 				{
 					Get_Temperature(GCodeReplyBuff.GCodeLineBuff, &temp);
-					report_printer_info.hotbed_cur = temp.hotbed_cur_temp;
-					report_printer_info.hotbed_target = temp.hotbed_target_temp;
-					report_printer_info.hotend_cur = temp.nozzle_cur_temp;
-					report_printer_info.hotend_target = temp.nozzle_target_temp;
-					if (MqttInitFlag)
+					Msg.Type = MSG_CMD_UPDATE_TEMP;
+					memset(Msg.Data, 0, sizeof(Msg.Data));
+					memcpy(Msg.Data, &temp, sizeof(marlin_temp));
+					if (MqttInitFlag && 0 == getleveldata)
 					{
-						DisplayPrinterInfo(MSG_CMD_UPDATE_TEMP);
-						tos_msg_q_post(&DataMsg, UPDATE_TEMP);
+						DisplayTemp(temp);
+						tos_msg_q_post(&DataMsg, (void *) &Msg);
 					}
 				}
 				else if (GCodeReplyBuff.GCodeLineBuff[0] == 'X'
 						&& GCodeReplyBuff.GCodeLineBuff[1] == ':')
 				{
 					Get_Move_Coordinate(GCodeReplyBuff.GCodeLineBuff, &axis);
-					report_printer_info.X = axis.X;
-					report_printer_info.Y = axis.Y;
-					report_printer_info.Z = axis.Z;
-					if (MqttInitFlag)
+					Msg.Type = MSG_CMD_UPDATE_AXIS;
+					memset(Msg.Data, 0, sizeof(Msg.Data));
+					memcpy(Msg.Data, &axis, sizeof(marlin_coordinate));
+					if (MqttInitFlag && 0 == getleveldata)
 					{
-						DisplayPrinterInfo(MSG_CMD_UPDATE_AXIS);
-						tos_msg_q_post(&DataMsg, UPDATE_AXIS);
+						DisplayAxis(axis);
+						tos_msg_q_post(&DataMsg, (void *) &Msg);
 					}
 				}
 
-				if (strstr(GCodeReplyBuff.GCodeLineBuff,
-						"Bilinear Leveling Grid:"))
-					parser_status = MSG_LEVEING;
-				switch (parser_status)
+				if (strstr(GCodeReplyBuff.GCodeLineBuff,"Bilinear Leveling Grid:"))
 				{
-				case MSG_NORMAL:
-					break;
-				case MSG_LEVEING:
+					getleveldata = 1;
+					parser_status = MSG_LEVEING;
+				}
+				if (MSG_LEVEING == parser_status)
+				{
 					if (parser_count < 6)
 					{
 						parser_count++;
-						switch (parser_count)
-						{
-						case 3:
-							memset(leveling_data.leveling_data1, 0, 30);
-							memcpy(leveling_data.leveling_data1,
-									GCodeReplyBuff.GCodeLineBuff + 2,
-									strlen(GCodeReplyBuff.GCodeLineBuff) - 2);
-							tos_msg_q_post(&DataMsg, UPDATE_LEVELING1);
-							break;
-						case 4:
-							memset(leveling_data.leveling_data2, 0, 30);
-							memcpy(leveling_data.leveling_data2,
-									GCodeReplyBuff.GCodeLineBuff + 2,
-									strlen(GCodeReplyBuff.GCodeLineBuff) - 2);
-							tos_msg_q_post(&DataMsg, UPDATE_LEVELING2);
-							break;
-						case 5:
-							memset(leveling_data.leveling_data3, 0, 30);
-							memcpy(leveling_data.leveling_data3,
-									GCodeReplyBuff.GCodeLineBuff + 2,
-									strlen(GCodeReplyBuff.GCodeLineBuff) - 2);
-							tos_msg_q_post(&DataMsg, UPDATE_LEVELING3);
-							break;
-						case 6:
-							memset(leveling_data.leveling_data4, 0, 30);
-							memcpy(leveling_data.leveling_data4,
-									GCodeReplyBuff.GCodeLineBuff + 2,
-									strlen(GCodeReplyBuff.GCodeLineBuff));
-							tos_msg_q_post(&DataMsg, UPDATE_LEVELING4);
-							break;
-						}
-						printf("%d->level_data:%s\n", parser_count,
-								GCodeReplyBuff.GCodeLineBuff);
+						if (3 == parser_count)
+							Msg.Type = MSG_CMD_LEVELING_1;
+						else if (4 == parser_count)
+							Msg.Type = MSG_CMD_LEVELING_2;
+						else if (5 == parser_count)
+							Msg.Type = MSG_CMD_LEVELING_3;
+						else if (6 == parser_count)
+							Msg.Type = MSG_CMD_LEVELING_4;
+						memset(Msg.Data, 0, sizeof(Msg.Data));
+						memcpy(Msg.Data, GCodeReplyBuff.GCodeLineBuff + 2,
+								strlen(GCodeReplyBuff.GCodeLineBuff) - 2);
+						tos_msg_q_post(&DataMsg, (void *) &Msg);
 					}
 					else
 					{
 						parser_count = 0;
+						getleveldata = 0 ;
 						parser_status = MSG_NORMAL;
 					}
-					break;
 				}
 				memset(GCodeReplyBuff.GCodeLineBuff, 0, REPLY_MAX_LEN);
 				GCodeReplyBuff.GCodeLineCount = 0;
@@ -252,34 +269,28 @@ int main(void)
 	}
 }
 
-static void DisplayPrinterInfo(enum MsgCmd_t Cmd)
+static void DisplayTemp(marlin_temp temp)
 {
-	char buf[32] = { 0 };
-	switch (Cmd)
-	{
-	case MSG_CMD_UPDATE_TEMP:
-		memset(buf, 0, sizeof(buf));
-		snprintf(buf, sizeof(buf), "Hotend:%.lf/%.lf",
-				report_printer_info.hotend_cur,
-				report_printer_info.hotend_target);
-		LCD_Fill(10, 122, 240, 122 + 16, BLACK);
-		LCD_Fill(10, 122 + 16, 240, 122 + 16 + 16, BLACK);
-		LCD_ShowString(10, 122, buf, RED, BLACK, 16, 0);
-		memset(buf, 0, sizeof(buf));
-		snprintf(buf, sizeof(buf), "Hotbed:%.lf/%.lf",
-				report_printer_info.hotbed_cur,
-				report_printer_info.hotbed_target);
-		LCD_ShowString(10, 122 + 16, buf, RED, BLACK, 16, 0);
-		break;
-	case MSG_CMD_UPDATE_AXIS:
-		memset(buf, 0, 32);
-		snprintf(buf, sizeof(buf), "Axis:%.lf %.lf %.lf", report_printer_info.X,
-				report_printer_info.Y, report_printer_info.Z);
-		LCD_Fill(10, 122 + 16 + 16, 240, 122 + 16 + 16 + 16, BLACK);
-		LCD_ShowString(10, 122 + 16 + 16, buf, RED, BLACK, 16, 0);
-		break;
-	default:
-		break;
-	}
+	char buf[32] =
+	{ 0 };
+	memset(buf, 0, sizeof(buf));
+	snprintf(buf, sizeof(buf), "Hotend:%.lf/%.lf", temp.nozzle_cur_temp,
+			temp.nozzle_target_temp);
+	LCD_Fill(10, 122, 240, 122 + 16, BLACK);
+	LCD_Fill(10, 122 + 16, 240, 122 + 16 + 16, BLACK);
+	LCD_ShowString(10, 122, buf, RED, BLACK, 16, 0);
+	memset(buf, 0, sizeof(buf));
+	snprintf(buf, sizeof(buf), "Hotbed:%.lf/%.lf", temp.hotbed_cur_temp,
+			temp.hotbed_target_temp);
+	LCD_ShowString(10, 122 + 16, buf, RED, BLACK, 16, 0);
 }
 
+static void DisplayAxis(marlin_coordinate axis)
+{
+	char buf[32] =
+	{ 0 };
+	memset(buf, 0, 32);
+	snprintf(buf, sizeof(buf), "Axis:%.lf %.lf %.lf", axis.X, axis.Y, axis.Z);
+	LCD_Fill(10, 122 + 16 + 16, 240, 122 + 16 + 16 + 16, BLACK);
+	LCD_ShowString(10, 122 + 16 + 16, buf, RED, BLACK, 16, 0);
+}

@@ -1,40 +1,25 @@
 #include "app_main.h"
 
 ap_info esp8266_info;
-report_info report_printer_info;
-report_leveling_data leveling_data;
 
-char payload[256] = { 0 };
-char client_token_cache[128] = { 0 };
-static char report_topic_name[TOPIC_NAME_MAX_SIZE] = { 0 };
-static char report_reply_topic_name[TOPIC_NAME_MAX_SIZE] = { 0 };
+char payload[256] =
+{ 0 };
+char token_cache[128] =
+{ 0 };
+static char report_topic_name[TOPIC_NAME_MAX_SIZE] =
+{ 0 };
+static char report_reply_topic_name[TOPIC_NAME_MAX_SIZE] =
+{ 0 };
 
-static void MqttToPrinter(uint8_t cmd);
 static void WifiSmartConfig(void);
-static void ReportDeviceInfo(enum MsgCmd_t Cmd);
-static void ReportLevelingData(enum MsgCmd_t Cmd);
-
-GCodeCmdHandler_t GCodeCmd[] = {
-{ PRINTER_RESPONSE, NULL }, 					/*指令回应*/
-{ PRINTER_PLA_PRE, GCODE_PLA_PRE }, 			/*PLA预热*/
-{ PRINTER_ABS_PRE, GCODE_ABS_PRE }, 			/*ABS预热*/
-{ PRINTER_TEMP_DROP, GCODE_TEMP_DROP }, 		/*降温*/
-{ PRINTER_X_ADD_10, GCODE_X_MOVE_ADD }, 		/*X轴移动+10mm*/
-{ PRINTER_X_SUB_10, GCODE_X_MOVE_SUB }, 		/*X轴移动-10mm*/
-{ PRINTER_Y_ADD_10, GCODE_Y_MOVE_ADD }, 		/*Y轴移动+10mm*/
-{ PRINTER_Y_SUB_10, GCODE_Y_MOVE_SUB }, 		/*Y轴移动-10mm*/
-{ PRINTER_Z_ADD_10, GCODE_Z_MOVE_ADD }, 		/*Z轴移动+10mm*/
-{ PRINTER_Z_SUB_10, GCODE_Z_MOVE_SUB }, 		/*Z轴移动-10mm*/
-{ PRINTER_X_ZERO, GCODE_ZERO_OF_X }, 			/*X轴归零*/
-{ PRINTER_Y_ZERO, GCODE_ZERO_OF_Y }, 			/*Y轴归零*/
-{ PRINTER_Z_ZERO, GCODE_ZERO_OF_Z }, 			/*Z轴归零*/
-{ PRINTER_ALL_ZERO, GCODE_ZERO_OF_ALL }, 		/*全部归零*/
-{ PRINTER_LEVEING_GET, GCODE_LEVELING_DATA }, 	/*获取调平数据*/
-{ PRINTER_PRINTING, GCODE_START_PRINT } 		/*开始打印*/
-};
+static void ReportClientToken(void);
+static void ReportDeviceTemp(marlin_temp *temp);
+static void ReportDeviceAxis(marlin_coordinate *axis);
+static void ReportDeviceLevelData(uint8_t Type, char *data);
 
 void MessageParamsHandler(mqtt_message_t* msg)
 {
+	struct Msg_t Msg;
 	cJSON *root = NULL;
 	cJSON *token = NULL;
 	cJSON *params = NULL;
@@ -42,7 +27,8 @@ void MessageParamsHandler(mqtt_message_t* msg)
 	cJSON *led_control = NULL;
 	cJSON *printer_control = NULL;
 	cJSON *printer_fan_speed = NULL;
-	char GCodeBuf[15] = { 0 };
+	char GCodeBuf[15] =
+	{ 0 };
 	double result_fan_speed;
 #if 0
 	printf("mqtt callback:\r\n");
@@ -97,7 +83,8 @@ void MessageParamsHandler(mqtt_message_t* msg)
 	printer_control = cJSON_GetObjectItem(params, "printing_control");
 	if (printer_control)
 	{
-		MqttToPrinter(printer_control->valueint);
+		Msg.Type = printer_control->valueint;
+		tos_msg_q_post(&GCodeMsg, (void *) &Msg);
 	}
 
 	printer_fan_speed = cJSON_GetObjectItem(params, "fan_speed");
@@ -108,12 +95,18 @@ void MessageParamsHandler(mqtt_message_t* msg)
 				* 100 * 2.55;
 		snprintf(GCodeBuf, sizeof(GCodeBuf), GCODE_FAN_SETTING,
 				(int) result_fan_speed);
-		tos_msg_q_post(&GCodeMsg, GCodeBuf);
+		Msg.Type = MSG_2_GCODE_CMD_FAN_SETTING;
+		memcpy(Msg.Data, GCodeBuf, sizeof(GCodeBuf));
+		tos_msg_q_post(&GCodeMsg, (void *) &Msg);
 	}
+
 	/*7. 设置clientToken回复*/
 	token = cJSON_GetObjectItem(root, "clientToken");
 	if (token)
-		tos_msg_q_post(&DataMsg, UPDATE_TOKEN);
+	{
+		Msg.Type = MSG_CMD_UPDATE_TOKEN;
+		tos_msg_q_post(&DataMsg, (void *) &Msg);
+	}
 	cJSON_Delete(root);
 	root = NULL;
 }
@@ -123,7 +116,6 @@ void MqttTask(void)
 	int ret = 0;
 	int size = 0;
 	k_err_t err;
-	uint8_t MsgCmd;
 	void *MsgRecv;
 	mqtt_state_t state;
 	char *key = DEVICE_KEY;
@@ -155,9 +147,9 @@ void MqttTask(void)
 
 	if (tos_tf_module_mqtt_state_get(&state) != -1)
 	{
-		printf("MQTT: %s\n",state == MQTT_STATE_CONNECTED ? "CONNECTED" : "DISCONNECTED");
+		printf("MQTT: %s\n",
+				state == MQTT_STATE_CONNECTED ? "CONNECTED" : "DISCONNECTED");
 	}
-
 
 	/* 开始订阅topic */
 	size = snprintf(report_reply_topic_name, TOPIC_NAME_MAX_SIZE,
@@ -188,51 +180,32 @@ void MqttTask(void)
 
 	LCD_ShowString(10, 10, "MQTT Connect OK", WHITE, BLACK, 16, 0);
 	MqttInitFlag = 1;
+	struct Msg_t Msg;
 	while (1)
 	{
 		err = tos_msg_q_pend(&DataMsg, &MsgRecv, TOS_TIME_FOREVER);
 		if(K_ERR_NONE == err)
 		{
-			if(strstr(MsgRecv,UPDATE_TEMP))
-			MsgCmd = MSG_CMD_UPDATE_TEMP;
-			else if(strstr(MsgRecv,UPDATE_AXIS))
-			MsgCmd = MSG_CMD_UPDATE_AXIS;
-			else if(strstr(MsgRecv,UPDATE_TOKEN))
-			MsgCmd = MSG_CMD_UPDATE_TOKEN;
-			else if(strstr(MsgRecv,UPDATE_LEVELING1))
-			MsgCmd = MSG_CMD_LEVELING_1;
-			else if(strstr(MsgRecv,UPDATE_LEVELING2))
-			MsgCmd = MSG_CMD_LEVELING_2;
-			else if(strstr(MsgRecv,UPDATE_LEVELING3))
-			MsgCmd = MSG_CMD_LEVELING_3;
-			else if(strstr(MsgRecv,UPDATE_LEVELING4))
-			MsgCmd = MSG_CMD_LEVELING_4;
-			else
-			MsgCmd = 99;
-
-			switch(MsgCmd)
+			memcpy(&Msg,MsgRecv,sizeof(struct Msg_t));
+			switch(Msg.Type)
 			{
 				case MSG_CMD_UPDATE_TEMP:
-				ReportDeviceInfo(MSG_CMD_UPDATE_TEMP);
+					ReportDeviceTemp((marlin_temp *)&Msg.Data);
 				break;
+
 				case MSG_CMD_UPDATE_AXIS:
-				ReportDeviceInfo(MSG_CMD_UPDATE_AXIS);
+					ReportDeviceAxis((marlin_coordinate *)&Msg.Data);
 				break;
+
 				case MSG_CMD_UPDATE_TOKEN:
-				ReportDeviceInfo(MSG_CMD_UPDATE_TOKEN);
+					ReportClientToken();
 				break;
-				case MSG_CMD_LEVELING_1:
-				ReportLevelingData(MSG_CMD_LEVELING_1);
+
+				case MSG_CMD_LEVELING_1:case MSG_CMD_LEVELING_2:
+				case MSG_CMD_LEVELING_3:case MSG_CMD_LEVELING_4:
+					ReportDeviceLevelData(Msg.Type,Msg.Data);
 				break;
-				case MSG_CMD_LEVELING_2:
-				ReportLevelingData(MSG_CMD_LEVELING_2);
-				break;
-				case MSG_CMD_LEVELING_3:
-				ReportLevelingData(MSG_CMD_LEVELING_3);
-				break;
-				case MSG_CMD_LEVELING_4:
-				ReportLevelingData(MSG_CMD_LEVELING_4);
-				break;
+
 				default:
 				break;
 			}
@@ -241,15 +214,85 @@ void MqttTask(void)
 	}
 }
 
-static void MqttToPrinter(uint8_t cmd)
+//上报设备温度
+static void ReportDeviceTemp(marlin_temp *temp)
 {
-	if (cmd == GCodeCmd[cmd].Index)
-		tos_msg_q_post(&GCodeMsg, GCodeCmd[cmd].GcodeCmd);
+	char buf[50] =
+	{ 0 };
+	int nozzle_temp = 0;
+	static uint8_t report_alarm = 0;
+	/*热床温度上报*/
+	memset(buf, 0, sizeof(buf));
+	memset(payload, 0, sizeof(payload));
+	snprintf(buf, sizeof(buf), "%.2lf/%.2lf", temp->hotbed_cur_temp,
+			temp->hotbed_target_temp);
+	snprintf(payload, sizeof(payload), REPORT_HOTBED_TEMP_DATA_TEMPLATE, buf);
+	if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
+		NVIC_SystemReset();
+	/*喷头温度上报*/
+	memset(buf, 0, sizeof(buf));
+	memset(payload, 0, sizeof(payload));
+	snprintf(buf, sizeof(buf), "%.2lf/%.2lf", temp->nozzle_cur_temp,
+			temp->nozzle_target_temp);
+	snprintf(payload, sizeof(payload), REPORT_NOZZLE_TEMP_DATA_TEMPLATE, buf);
+	if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
+		NVIC_SystemReset();
+	//温度告警上报
+	memset(payload, 0, sizeof(payload));
+	nozzle_temp = (int) temp->nozzle_cur_temp;
+	if (nozzle_temp > 120)
+	{
+		if (0 == report_alarm)
+		{
+			report_alarm = 1;
+			memset(buf, 0, sizeof(buf));
+			snprintf(buf, sizeof(buf), "%d", nozzle_temp);
+			snprintf(payload, sizeof(payload),
+			REPORT_NOZZLE_TEMP_ALARM_DATA_TEMPLATE, buf);
+			if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
+				NVIC_SystemReset();
+		}
+	}
+	if (nozzle_temp < 120)
+		nozzle_temp = 0;
+
 }
 
-static void ReportLevelingData(enum MsgCmd_t Cmd)
+//上报设备坐标
+static void ReportDeviceAxis(marlin_coordinate *axis)
 {
-	char buf[50] = { 0 };
+	char buf[50] =
+	{ 0 };
+	memset(buf, 0, sizeof(buf));
+	memset(payload, 0, sizeof(payload));
+	snprintf(buf, sizeof(buf), "X:%.1f Y:%.1f Z:%.1f", axis->X, axis->Y,
+			axis->Z);
+	snprintf(payload, sizeof(payload), REPORT_POS_DATA_TEMPLATE, buf);
+	if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
+		NVIC_SystemReset();
+}
+
+//上报ClientToken
+static void ReportClientToken(void)
+{
+	char buf[50] =
+	{ 0 };
+	static uint32_t counter = 0;
+	memset(buf, 0, sizeof(buf));
+	memset(payload, 0, sizeof(payload));
+	memset(token_cache, 0, sizeof(token_cache));
+	snprintf(token_cache, sizeof(token_cache), "%d", counter++);
+	snprintf(payload, sizeof(payload), CONTROL_REPLY_DATA_TEMPLATE,
+			token_cache);
+	if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
+		NVIC_SystemReset();
+}
+
+//上报调平数据
+static void ReportDeviceLevelData(uint8_t Type, char *data)
+{
+	char buf[50] =
+	{ 0 };
 	static uint8_t flag = 0;
 	if (0 == flag)
 	{
@@ -288,22 +331,22 @@ static void ReportLevelingData(enum MsgCmd_t Cmd)
 	}
 	memset(buf, 0, sizeof(buf));
 	memset(payload, 0, sizeof(payload));
-	switch (Cmd)
+	switch (Type)
 	{
 	case MSG_CMD_LEVELING_1:
-		snprintf(buf, sizeof(buf), "%s", leveling_data.leveling_data1);
+		snprintf(buf, sizeof(buf), "%s", data);
 		snprintf(payload, sizeof(payload), REPORT_LEVELING_DATA1_TEMPLATE, buf);
 		break;
 	case MSG_CMD_LEVELING_2:
-		snprintf(buf, sizeof(buf), "%s", leveling_data.leveling_data2);
+		snprintf(buf, sizeof(buf), "%s", data);
 		snprintf(payload, sizeof(payload), REPORT_LEVELING_DATA2_TEMPLATE, buf);
 		break;
 	case MSG_CMD_LEVELING_3:
-		snprintf(buf, sizeof(buf), "%s", leveling_data.leveling_data3);
+		snprintf(buf, sizeof(buf), "%s", data);
 		snprintf(payload, sizeof(payload), REPORT_LEVELING_DATA3_TEMPLATE, buf);
 		break;
 	case MSG_CMD_LEVELING_4:
-		snprintf(buf, sizeof(buf), "%s", leveling_data.leveling_data4);
+		snprintf(buf, sizeof(buf), "%s", data);
 		snprintf(payload, sizeof(payload), REPORT_LEVELING_DATA4_TEMPLATE, buf);
 		flag = 0;
 		break;
@@ -314,7 +357,7 @@ static void ReportLevelingData(enum MsgCmd_t Cmd)
 	if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
 		NVIC_SystemReset();
 
-	if (MSG_CMD_LEVELING_4 == Cmd)
+	if (MSG_CMD_LEVELING_4 == Type)
 	{
 		memset(buf, 0, sizeof(buf));
 		memset(payload, 0, sizeof(payload));
@@ -326,85 +369,15 @@ static void ReportLevelingData(enum MsgCmd_t Cmd)
 	}
 }
 
-static void ReportDeviceInfo(enum MsgCmd_t Cmd)
-{
-	char buf[50] = { 0 };
-	int nozzle_temp = 0 ;
-	static uint32_t counter = 0;
-	static uint8_t report_alarm = 0;
-	switch (Cmd)
-	{
-	case MSG_CMD_UPDATE_TEMP:
-		memset(buf, 0, sizeof(buf));
-		memset(payload, 0, sizeof(payload));
-		snprintf(buf, sizeof(buf), "%.2lf/%.2lf",
-				report_printer_info.hotend_cur,
-				report_printer_info.hotend_target);
-		snprintf(payload, sizeof(payload), REPORT_NOZZLE_TEMP_DATA_TEMPLATE,
-				buf);
-		if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
-			NVIC_SystemReset();
-		memset(buf, 0, sizeof(buf));
-		memset(payload, 0, sizeof(payload));
-		snprintf(buf, sizeof(buf), "%.2lf/%.2lf",
-				report_printer_info.hotbed_cur,
-				report_printer_info.hotbed_target);
-		snprintf(payload, sizeof(payload), REPORT_HOTBED_TEMP_DATA_TEMPLATE,
-				buf);
-		if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
-			NVIC_SystemReset();
-
-		//温度告警上报
-		memset(payload, 0, sizeof(payload));
-		nozzle_temp = (int)report_printer_info.hotend_cur ;
-		if(nozzle_temp > 120)
-		{
-			if(0 == report_alarm)
-			{
-				report_alarm = 1;
-				memset(buf, 0, sizeof(buf));
-				snprintf(buf, sizeof(buf), "%d",nozzle_temp);
-				snprintf(payload, sizeof(payload), REPORT_NOZZLE_TEMP_ALARM_DATA_TEMPLATE,buf);
-				if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
-					NVIC_SystemReset();
-			}
-		}
-		if(nozzle_temp < 120)
-			nozzle_temp = 0;
-		break;
-	case MSG_CMD_UPDATE_AXIS:
-		memset(buf, 0, sizeof(buf));
-		memset(payload, 0, sizeof(payload));
-		snprintf(buf, sizeof(buf), "X:%.1f Y:%.1f Z:%.1f",
-				report_printer_info.X, report_printer_info.Y,
-				report_printer_info.Z);
-		printf("axis:%s\n",buf);
-		snprintf(payload, sizeof(payload), REPORT_POS_DATA_TEMPLATE, buf);
-		if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
-			NVIC_SystemReset();
-		break;
-	case MSG_CMD_UPDATE_TOKEN:
-		memset(buf, 0, sizeof(buf));
-		memset(payload, 0, sizeof(payload));
-		memset(client_token_cache,0,sizeof(client_token_cache));
-		snprintf(client_token_cache,sizeof(client_token_cache),"%d",counter++);
-		snprintf(payload, sizeof(payload), CONTROL_REPLY_DATA_TEMPLATE,
-				client_token_cache);
-		if (tos_tf_module_mqtt_pub(report_topic_name, QOS0, payload) != 0)
-			NVIC_SystemReset();
-		break;
-	default:
-		break;
-	}
-}
-
 static void WifiSmartConfig(void)
 {
 	int rssi;
 	int channel = -1;
 	static uint8_t ConfigWifi = 0;
-	char ssid[50] = { 0 };
-	char bssid[50] = { 0 };
+	char ssid[50] =
+	{ 0 };
+	char bssid[50] =
+	{ 0 };
 	/*获取WIFI AP信息，如果返回-1，则说明获取不成功*/
 	/*当开机前长按按键3，则进入WIFI配网模式*/
 	if (-1 == tos_tf_module_get_info(ssid, bssid, &channel, &rssi)
@@ -428,7 +401,7 @@ static void WifiSmartConfig(void)
 			NVIC_SystemReset();
 		}
 	}
-	if(0 == ConfigWifi)
+	if (0 == ConfigWifi)
 		LCD_Fill(0, 0, 240, 120, BLACK);
 	GPIO_WriteBit(GPIOE, GPIO_Pin_5, 1); //灭灯
 	snprintf(esp8266_info.ssid, sizeof(esp8266_info.ssid), "ssid:%s", ssid);
@@ -442,5 +415,5 @@ static void WifiSmartConfig(void)
 	LCD_ShowString(10, 26 + 16 + 16, esp8266_info.channel, WHITE, BLACK, 16, 0);
 	LCD_ShowString(10, 26 + 16 + 16 + 16, esp8266_info.rssi, WHITE, BLACK, 16,
 			0);
-	LCD_ShowPicture(0,190, 240, 50,gImage_icon_for_tencentos_tiny);
+	LCD_ShowPicture(0, 190, 240, 50, gImage_icon_for_tencentos_tiny);
 }

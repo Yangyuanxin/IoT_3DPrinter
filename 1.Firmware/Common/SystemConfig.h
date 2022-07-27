@@ -41,14 +41,26 @@ extern at_agent_t esp8266_tf_agent;
 extern GCodeReplyBuff_t GCodeReplyBuff;
 /*McuPlatform End*/
 
-#define UPDATE_TEMP  "UpdateTemp"
-#define UPDATE_AXIS  "UpdateAxis"
-#define UPDATE_TOKEN "ClientToken"
-#define UPDATE_LEVELING1 "Leveling1"
-#define UPDATE_LEVELING2 "Leveling2"
-#define UPDATE_LEVELING3 "Leveling3"
-#define UPDATE_LEVELING4 "Leveling4"
-#define AUTO_GET_TEMP_MCODE "M155 S4\n"
+
+#define GCODE_PLA_PRE 	  	  "M140 S60\nM104 S190\n"
+#define GCODE_ABS_PRE 	  	  "M140 S100\nM104 S240\n"
+#define GCODE_TEMP_DROP 	  "M140 S0\nM104 S0\n"
+#define GCODE_X_MOVE_ADD 	  "G91\nG1 F1500 X+10\nG90\nM114\n"
+#define GCODE_X_MOVE_SUB      "G91\nG1 F1500 X-10\nG90\nM114\n"
+#define GCODE_Y_MOVE_ADD 	  "G91\nG1 F1500 Y+10\nG90\nM114\n"
+#define GCODE_Y_MOVE_SUB      "G91\nG1 F1500 Y-10\nG90\nM114\n"
+#define GCODE_Z_MOVE_ADD 	  "G91\nG1 F1500 Z+10\nG90\nM114\nM114\n"
+#define GCODE_Z_MOVE_SUB      "G91\nG1 F1500 Z-10\nG90\nM114\nM114\n"
+#define GCODE_ZERO_OF_X	      "G28 X\n"
+#define GCODE_ZERO_OF_Y	      "G28 Y\n"
+#define GCODE_ZERO_OF_Z	      "G28 Z\n"
+#define GCODE_ZERO_OF_ALL	  "G28\n"
+#define GCODE_LEVELING_DATA   "M420V\n"
+#define GCODE_FAN_SETTING 	  "M106 S%d\n"
+#define GCODE_START_PRINT     "M23 TENCEN~1.GCO\nM24\n"
+#define GCODE_AUTO_GET_TEMP   "M155 S4\n"
+
+#define MSG_LEN 50
 
 enum MsgCmd_t
 {
@@ -58,7 +70,35 @@ enum MsgCmd_t
 	MSG_CMD_LEVELING_1,
 	MSG_CMD_LEVELING_2,
 	MSG_CMD_LEVELING_3,
-	MSG_CMD_LEVELING_4
+	MSG_CMD_LEVELING_4,
+};
+
+enum Msg2GCode_t
+{
+	MSG_2_GCODE_CMD_AUTO_GET_TEMP = 0,
+	MSG_2_GCODE_CMD_PLA_PRE,
+	MSG_2_GCODE_CMD_ABS_PRE,
+	MSG_2_GCODE_CMD_TEMP_DROP,
+	MSG_2_GCODE_CMD_X_MOVE_ADD,
+	MSG_2_GCODE_CMD_X_MOVE_SUB,
+	MSG_2_GCODE_CMD_Y_MOVE_ADD,
+	MSG_2_GCODE_CMD_Y_MOVE_SUB,
+	MSG_2_GCODE_CMD_Z_MOVE_ADD,
+	MSG_2_GCODE_CMD_Z_MOVE_SUB,
+	MSG_2_GCODE_CMD_ZERO_OF_X,
+	MSG_2_GCODE_CMD_ZERO_OF_Y,
+	MSG_2_GCODE_CMD_ZERO_OF_Z,
+	MSG_2_GCODE_CMD_ZERO_OF_ALL,
+	MSG_2_GCODE_CMD_LEVEL_DATA,
+	MSG_2_GCODE_CMD_FAN_SETTING,
+	MSG_2_GCODE_CMD_START_PRINT
+};
+
+/*ÏûÏ¢·â×°*/
+struct Msg_t
+{
+	uint8_t Type;
+	char Data[50];
 };
 
 enum MsgGCodeReply_t
