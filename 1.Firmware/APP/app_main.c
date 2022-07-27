@@ -207,6 +207,7 @@ void MqttTask(void)
 				break;
 
 				default:
+					printf("Msg.Type is Unknow!\n");
 				break;
 			}
 		}

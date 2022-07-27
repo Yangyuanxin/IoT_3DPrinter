@@ -12,7 +12,7 @@ typedef struct ap_info
 
 typedef struct GCodeCmdHandler_t
 {
-	uint8_t Index;
+	uint8_t Type;
 	char *GcodeCmd;
 }GCodeCmdHandler_t;
 

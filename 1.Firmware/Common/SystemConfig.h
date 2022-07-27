@@ -60,8 +60,6 @@ extern GCodeReplyBuff_t GCodeReplyBuff;
 #define GCODE_START_PRINT     "M23 TENCEN~1.GCO\nM24\n"
 #define GCODE_AUTO_GET_TEMP   "M155 S4\n"
 
-#define MSG_LEN 50
-
 enum MsgCmd_t
 {
 	MSG_CMD_UPDATE_TEMP=0,
@@ -95,10 +93,11 @@ enum Msg2GCode_t
 };
 
 /*ÏûÏ¢·â×°*/
+#define MSG_LEN 50
 struct Msg_t
 {
 	uint8_t Type;
-	char Data[50];
+	char Data[MSG_LEN];
 };
 
 enum MsgGCodeReply_t
