@@ -21,9 +21,9 @@ typedef struct GCodeCmdHandler_t
 #define SCREEN_HEIGHT   240
 
 //物联网平台三元组
-#define PRODUCT_ID              "99LPJ2KWLM"
-#define DEVICE_NAME             "vyper"
-#define DEVICE_KEY              "WehUw9Da/ML2ngraKNEEEg=="
+#define PRODUCT_ID              ""
+#define DEVICE_NAME             ""
+#define DEVICE_KEY              ""
 
 /*喷头温度上报*/
 #define REPORT_NOZZLE_TEMP_DATA_TEMPLATE  \
