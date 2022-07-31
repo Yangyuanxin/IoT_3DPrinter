@@ -43,17 +43,17 @@
 
 具体的Mcu平台，目前该部分仅支持CH32_EVB平台。
 
-##### 2.3、Hardware
+##### 2.2、Hardware
 
 开发板硬件原理图及芯片数据手册。
 
-##### 2.4、Json_file
+##### 2.3、3Dprinter_firmware
 
-对接腾讯云平台的Json文件
+Anycubic 3D打印机Vyper固件。
 
-##### 2.5、Wifi_firmware
+##### 2.4、Resource
 
-包含腾讯云WIFI固件、WIFI固件烧录说明、WIFI固件下载工具
+存放TencentOS-tiny图标、腾讯云平台Json模板、测试3D模型、WIFI固件及烧录方法、视频和PPT。
 
 #### 参与贡献
 
