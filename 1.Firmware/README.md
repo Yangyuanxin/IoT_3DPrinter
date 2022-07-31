@@ -5,7 +5,8 @@
 
 #### 2、固件源代码架构
 
-除去TencentCloud IoT Explorer层，其它都是固件层需要开发的：![img](https://ask.qcloudimg.com/http-save/yehe-5745070/07b3629159899c9d046f7a9e1890f503.jpeg?imageView2/2/w/1620)该项目的固件层分为APP、Bsp、Common、Hardware、McuPlatform、OperatingSystem这几个部分，每个部分的功能如下：
+除去TencentCloud IoT Explorer层，其它都是固件层需要开发的：![img](https://ask.qcloudimg.com/http-save/yehe-5745070/07b3629159899c9d046f7a9e1890f503.jpeg?imageView2/2/w/1620)
+该项目的固件层分为APP、Bsp、Common、Hardware、McuPlatform、OperatingSystem这几个部分，每个部分的功能如下：
 
 ##### 2.1、APP
 
