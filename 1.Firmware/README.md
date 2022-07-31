@@ -5,7 +5,7 @@
 
 #### 2、固件源代码架构
 
-该项目分为APP、Bsp、Common、Hardware、McuPlatform、OperatingSystem这几个部分，每个部分的功能如下：
+除去TencentCloud IoT Explorer层，其它都是固件层需要开发的：![img](https://ask.qcloudimg.com/http-save/yehe-5745070/07b3629159899c9d046f7a9e1890f503.jpeg?imageView2/2/w/1620)该项目的固件层分为APP、Bsp、Common、Hardware、McuPlatform、OperatingSystem这几个部分，每个部分的功能如下：
 
 ##### 2.1、APP
 
@@ -33,11 +33,7 @@
 
 #### 3、业务设计流程
 
-APP主业务流程分别创建三个线程来进行不同业务的处理，而线程间通信机制采用TencentOS-tiny提供的消息队列进行交互通讯，当线程没有接收到消息时，该线程为阻塞等待状态而不消耗CPU时间，直到接收到消息时，线程才恢复就绪态，对接收的数据进行处理。这样做的好处是能够高效的管理CPU资源，避免CPU资源浪费。
-
-![img](https://ask.qcloudimg.com/http-save/yehe-5745070/a465aa59afcda9887760ff5390f036e5.jpeg?imageView2/2/w/1620)
-
-其中，消息队列之间的数据传输设计是基于一个消息结构体来进行的，如下所示：
+APP主业务流程分别创建三个线程来进行不同业务的处理，而线程间通信机制采用TencentOS-tiny提供的消息队列进行交互通讯，当线程没有接收到消息时，该线程为阻塞等待状态而不消耗CPU时间，直到接收到消息时，线程才恢复就绪态，对接收的数据进行处理。这样做的好处是能够高效的管理CPU资源，避免CPU资源浪费。![img](https://ask.qcloudimg.com/http-save/yehe-5745070/a465aa59afcda9887760ff5390f036e5.jpeg?imageView2/2/w/1620)其中，消息队列之间的数据传输设计是基于一个消息结构体来进行的，如下所示：
 
 ```c
 /*消息结构体封装*/

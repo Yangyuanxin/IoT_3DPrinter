@@ -1,9 +1,7 @@
 # IoT_3DPrinter
 #### 1、介绍
 
-这是一个基于沁恒CH32V_EVB开发套件的TencentOS Tiny 3D打印机云控制系统方案，包括基于腾讯云IoT Explorer物联网平台、腾讯连连小程序以及3D打印控制系统固件的开发，该方案作为本年度腾讯AIoT开发者成长激励计划的参赛项目，其整体架构设计如下图所示：![img](https://ask.qcloudimg.com/http-save/yehe-5745070/07b3629159899c9d046f7a9e1890f503.jpeg?imageView2/2/w/1620)
-
-该项目分为TencentCloud IoT Explorer、APP、Common、Operating System、Hardware、Bsp、McuPlatform这几个部分，每个部分的功能如下：
+这是一个基于沁恒CH32V_EVB开发套件的TencentOS Tiny 3D打印机云控制系统方案，包括基于腾讯云IoT Explorer物联网平台、腾讯连连小程序以及3D打印控制系统固件的开发，该方案作为本年度腾讯AIoT开发者成长激励计划的参赛项目，其整体架构设计如下图所示：![img](https://ask.qcloudimg.com/http-save/yehe-5745070/07b3629159899c9d046f7a9e1890f503.jpeg?imageView2/2/w/1620)该项目分为TencentCloud IoT Explorer、APP、Common、Operating System、Hardware、Bsp、McuPlatform这几个部分，每个部分的功能如下：
 
 ###### 1.1、TencentCloud IoT Explorer
 
