@@ -1188,25 +1188,33 @@ https://mp.weixin.qq.com/s/t8iVaypA1BtZwt7EEkAWyw
 
 然后我们就需要将这个页面右下角生成的二维码保存起来，如下图4-20所示，详情访问以下链接：
 
-![img](https://ask.qcloudimg.com/http-save/yehe-5745070/39f0442b60c85c7e7f15503f79cca057.png?imageView2/2/w/1620)
+```c
+https://cloud.tencent.com/developer/article/2061046
+```
 
 ​																		图4-20、配网引导页二维码
 
 接下来通过image2Lcd将这个二维码转成能够在Mcu Lcd上显示的数组：
 
-![img](https://ask.qcloudimg.com/http-save/yehe-5745070/c2796f2421a6d9dd9360137bee0f5f5c.png?imageView2/2/w/1620)
+```c
+https://cloud.tencent.com/developer/article/2061046
+```
 
 ​													图4-21、将配网引导页二维码转换为C语言数组
 
 然后将生成的这个数组复制到代码工程里：
 
-![img](https://ask.qcloudimg.com/http-save/yehe-5745070/617f9991a843852bb4df28107ae90360.png?imageView2/2/w/1620)
+```c
+https://cloud.tencent.com/developer/article/2061046
+```
 
 ​																图4-21、配网引导页C语言数组定义
 
  后续在程序中需要调用显示bmp的函数，即可显示二维码，最终效果如下图4-22所示：
 
-![img](https://ask.qcloudimg.com/http-save/yehe-5745070/dc6e88053ab81454fa5e6aed1be24756.png?imageView2/2/w/1620)
+```c
+https://cloud.tencent.com/developer/article/2061046
+```
 
 ​															图4-22、配网引导页在硬件平台上显示
 
@@ -1250,7 +1258,9 @@ https://mp.weixin.qq.com/s/t8iVaypA1BtZwt7EEkAWyw
 
 #### 7、持续开源计划
 
-​	这是一个全平台的TencentOS Tiny 3D打印机云控制系统方案，包括基于腾讯云IoT Explorer物联网平台、腾讯连连小程序以及3D打印控制系统固件的开发，该方案作为本年度腾讯AIoT开发者成长激励计划的参赛项目，其整体架构设计如下图所示：![img](https://ask.qcloudimg.com/http-save/yehe-5745070/07b3629159899c9d046f7a9e1890f503.jpeg?imageView2/2/w/1620)	该项目分为TencentCloud IoT Explorer、APP、Common、Operating System、Hardware、Bsp、McuPlatform这几个部分，每个部分的功能如下：
+​	这是一个全平台的TencentOS Tiny 3D打印机云控制系统方案，包括基于腾讯云IoT Explorer物联网平台、腾讯连连小程序以及3D打印控制系统固件的开发，该方案作为本年度腾讯AIoT开发者成长激励计划的参赛项目，其整体架构设计如下图所示：
+
+![ae6b86d6b42ab9909f8eb819dca7c7fb.png](https://img-blog.csdnimg.cn/img_convert/ae6b86d6b42ab9909f8eb819dca7c7fb.png)	该项目分为TencentCloud IoT Explorer、APP、Common、Operating System、Hardware、Bsp、McuPlatform这几个部分，每个部分的功能如下：
 
 ###### 1、TencentCloud IoT Explorer
 
