@@ -1308,7 +1308,7 @@ Anycubic 3D打印机Vyper固件。
 
 存放TencentOS-tiny图标、腾讯云平台Json模板、测试3D模型、WIFI固件及烧录方法、视频和PPT。
 
-#### 参与贡献
+#### 9、参与贡献
 
 1. Fork 本仓库
 2. 新建 Feat_xxx 分支
