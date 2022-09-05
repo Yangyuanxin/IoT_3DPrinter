@@ -1262,31 +1262,31 @@ https://cloud.tencent.com/developer/article/2061046
 
 ![ae6b86d6b42ab9909f8eb819dca7c7fb.png](https://img-blog.csdnimg.cn/img_convert/ae6b86d6b42ab9909f8eb819dca7c7fb.png)	该项目分为TencentCloud IoT Explorer、APP、Common、Operating System、Hardware、Bsp、McuPlatform这几个部分，每个部分的功能如下：
 
-###### 1、TencentCloud IoT Explorer
+**1、TencentCloud IoT Explorer**
 
 腾讯IoT Explorer物联网设备管理平台、集成腾讯连连小程序、微信公众号推送等物联网业务。
 
-###### 2、APP
+**2、APP**
 
 主要为本项目的业务逻辑部分，主要分为串口数据解析、GCode命令转发、Mqtt订阅和发布业务处理等。
 
-###### 3、Common 
+**3、Common** 
 
 主要集成了提供给项目使用的软件组件，其中包括ringbuffer、cJSON、Mqtt、Log系统等其它组件。
 
-###### 4、Operating System
+**4、Operating System**
 
 目前仅支持TencentOS-tiny，TencentOS-tiny，是一个内存占用极小、组件丰富且效率极高的实时操作系统。
 
-###### 5、Hardware
+**5、Hardware**
 
 主要实现了一些完成项目必备的硬件驱动程序，包括按键驱动、LCD驱动、LED驱动、WIFI驱动等。
 
-###### 6、Bsp
+**6、Bsp**
 
 主要是由Mcu平台提供的板级支持包，目前该部分仅支持基于沁恒CH32V_EVB开发套件。
 
-###### 7、McuPlatform
+**7、McuPlatform**
 
 具体的Mcu平台，目前该部分仅支持CH32_EVB平台。
 
