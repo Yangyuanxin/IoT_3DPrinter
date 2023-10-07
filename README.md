@@ -4,18 +4,18 @@
 ##### 1.1、前言
 ​    3D打印技术是增材制造的典型体现。它的原理是通过特定的切片软件将产品的3D设计模型图转换成3D打印机控制系统可以识别的控制代码，该控制代码在导入3D打印机控制系统后，3D打印机控制系统通过解析每一行控制代码，进而控制3D打印机打印模型。例如FDM打印机的打印原理，如下图1-1所示。
 
-![01602f598a25c32cdec32e531cd4b8e7.png](https://img-blog.csdnimg.cn/img_convert/01602f598a25c32cdec32e531cd4b8e7.png)
+![](assets/pic1.png)
 
 ​																			图1-1、3D打印原理
 
 ​	STL/Obj(当然还有很多种格式)文件就是模型本身的文件，它可能是由三维模型设计师、结构工程师设计出来的模型文件，也可能是通过3D扫描仪扫描出来的模型文件，而GCode就是通过切片软件将这些STL/Obj等模型文件切出来的一堆能够让3D打印机识别并运行的指令，它会告诉3D打印机应该如何去运行，例如以下是通过FDM Cura切片软件切出来的开源模型文件(如下图1-2所示)-可动盘龙的GCode代码(如下图1-3所示)：
-![07fc66a3616903ca70148a604d1ce06e.png](https://img-blog.csdnimg.cn/img_convert/07fc66a3616903ca70148a604d1ce06e.png)
+![](assets/pic2.png)
 
 ​																	图1-2、可动盘龙模型STL文件 
 
 ​	可动盘龙切片后生成的GCode文件：
 
-![f11c2ca60c81e77412030d0c1eaa99fb.png](https://img-blog.csdnimg.cn/img_convert/f11c2ca60c81e77412030d0c1eaa99fb.png)
+![](assets/pic3.png)
 
 ​																图1-3、可动盘龙GCode切片文件
 
@@ -28,7 +28,7 @@ https://www.bilibili.com/video/BV1HM4y1A73r?spm_id_from=333.337.search-card.all.
 ​	目前，3D打印技术在全球增材制造领域已经发展十分成熟。而我国的3D打印技术与欧美国家相比相对来说较为落后，具体体现在3D打印机技术在物联网方面的应用。目前，我国市场上的3D打印机大部分都不具备网络控制和管理功能，不能更好地与现代物联网信息时代接轨。
 
 ​	本次参加开发者成长激励计划的作品是基于TencentOS Tiny的FDM 3D打印机云控制系统方案，该方案初步构思一个基于FDM 3D打印机的云控制交互系统，实现对FDM 3D打印机的控制、信息交互等基本功能。相对于3D打印机本身来说，本次参赛作品的云控制系统方案相当于是一个上位机，而上位机的体现方式可以是串口屏、物联网通讯模块等其它任何组成形式。市面上常见的主流串口屏式3D打印机主流通信架构如下图1-4所示：
-![a2e56ff98f5d4c39a120902e205ba29a.png](https://img-blog.csdnimg.cn/img_convert/a2e56ff98f5d4c39a120902e205ba29a.png)
+![](assets/pic4.png)
 
 ​																图1-4、主流的3D打印机通讯架构
 
@@ -80,11 +80,10 @@ https://cloud.tencent.com/developer/video/32150
 ##### 2.1、硬件部分
 ​    硬件部分主要分为3D打印机(Anycubic Vyper 3D打印机)和3D打印机联网控制系统( 基于沁恒RISV-V MCU CH32V307VCT6芯片的CH32V_EVB开发平台)两部分，其中CH32V_EVB(如图2-2所示)作为上位机，而Anycubic Vyper 3D打印机则作为下位机，如下图2-1所示:
 
-![637e96a70079a8b9e0e14b15c7236261.jpeg](https://img-blog.csdnimg.cn/img_convert/637e96a70079a8b9e0e14b15c7236261.jpeg)
+![](assets/pic5.png)
 
 ​														图2-1、3D打印机控制系统硬件组成部分
-
-![2d03539987d8f902a151e94c0ba54b4e.png](https://img-blog.csdnimg.cn/img_convert/2d03539987d8f902a151e94c0ba54b4e.png)
+![](assets/pic6.png)
 
 ​																	图2-2、CH32V_EVB开发平台
 
@@ -95,10 +94,7 @@ https://github.com/ANYCUBIC-3D/Vyper
 ```
 
 ​	用户可根据自身需求定制和修改Marlin固件来实现3D打印机的自定义功能，甚至也可以结合其它配件改装成为雕刻机等方案。CH32V_EVB是腾讯本次TencentOS Tiny RISC-V IoT训练营结合沁恒推出的RISV芯片方案的开发板，如下图2-3所示:
-
-![489b29ec56b6c17341889f635776a1e7.png](https://img-blog.csdnimg.cn/img_convert/489b29ec56b6c17341889f635776a1e7.png)
-
-
+![](assets/pic7.png)
 
 ​																图2-3、沁恒CH32V307开发板
 
@@ -106,7 +102,7 @@ https://github.com/ANYCUBIC-3D/Vyper
 
 ​    软件部分是将3D打印机与TencentOS Tiny、腾讯云IoT Explorer、腾讯连连小程序进行结合，从而实现3D打印机物联网控制交互、数据交互的基本功能，其主要由以下三个部分构成，如下图2-2所示:
 
-![ff911e6f4dc5ddfeb0bde6a32d6346e7.png](https://img-blog.csdnimg.cn/img_convert/ff911e6f4dc5ddfeb0bde6a32d6346e7.png)
+![](assets/pic8.png)
 
 ​																				图2-3、交互框架图
 
@@ -116,22 +112,16 @@ https://github.com/ANYCUBIC-3D/Vyper
 
 ##### 3.1、腾讯连连小程序部分
 ​    腾讯连连小程序部分采用的是IoT Explorer团队提供的最新的可视化面板编辑器来实现，可视化面板编辑器相对于标准面板(如图3-1所示)来说，控件种类和可操作性更加强大，即使开发者不懂微信小程序的开发，只需结合数据模版所提供的功能属性，即能够通过可视化面板编辑器轻松、快速做出功能丰富、样式好看、人机交互体验感超好的交互界面。
-
-![bb8c9a051aca4e19f8a5f9b70f5bff07.png](https://img-blog.csdnimg.cn/img_convert/bb8c9a051aca4e19f8a5f9b70f5bff07.png)
-
+![](assets/pic9.png)
 ​																	图3-1、标准面板界面的呈现
 
 ​	由于时间关系，目前仅用可视化面板编辑器规划了两个页面，如下图3-2所示:
-
-![a09609bf79444ad1921fc23e165c30d5.jpeg](https://img-blog.csdnimg.cn/img_convert/a09609bf79444ad1921fc23e165c30d5.jpeg)
-
+![](assets/pic10.png)
 ​															图3-2、腾讯连连小程序界面
 
 ##### 3.2、嵌入式设备端部分
 ​       嵌入式设备端部分主要包括TencentCloud IoT Explorer、APP、Common、OperatingSystem、Hardware、Bsp、McuPlatform这几个部分组成。其软件整体框架组织设计理念是为了方便项目的可持续功能迭代和未来的发展，如下图3-3所示：
-
-![ae6b86d6b42ab9909f8eb819dca7c7fb.png](https://img-blog.csdnimg.cn/img_convert/ae6b86d6b42ab9909f8eb819dca7c7fb.png)
-
+![](assets/pic11.png)
 ​																			图3-3、软件框架结构图
 
 - **(1)TencentCloud IoT Explorer**
@@ -163,10 +153,8 @@ https://github.com/ANYCUBIC-3D/Vyper
 ​    APP主业务流程分别创建三个线程来进行不同业务的处理，而线程间通信机制采用TencentOS-tiny提供的消息队列进行交互通讯，当线程没有接收到消息时，该线程为阻塞等待状态而不消耗CPU时间，直到接收到消息时，线程才恢复就绪态，对接收的数据进行处理。这样做的好处是能够高效的管理CPU资源，避免CPU资源浪费。
 
 ​	在APP主业务流程设计中，采用消息队列通讯也是一种软件设计解耦的实现方式，线程与线程之间通过消息队列通信，能够实现业务隔离，让整个系统的可拓展性大大提高。除此之外，采用消息队列的好处是能够携带数据载体，数据格式也可以由用户自定义。本次参赛的作品主业务流程设计思路如下图3-4所示:
-
-![bfb14e6384264601ad22ba5856c6bc83.png](https://img-blog.csdnimg.cn/img_convert/bfb14e6384264601ad22ba5856c6bc83.png)
-
-​																		图3-4、程序业务流程设计
+![](assets/pic12.png)
+​																	图3-4、程序业务流程设计
 
 ​	其中，消息队列之间的数据传输设计是基于一个消息结构体来进行的，如下所示：
 
@@ -182,9 +170,9 @@ struct Msg_t
 };
 ```
 
-![551456f8ee992615dacfafdff8b711a5.png](https://img-blog.csdnimg.cn/img_convert/551456f8ee992615dacfafdff8b711a5.png)
-
-​															3-6、Marlin自动获取温度上报命令
+![](assets/pic13.png)
+															
+															3-6、Marlin自动获取温度上报命令
 
 而消息类型则是由各种命令构成，如下所示：
 
@@ -287,7 +275,7 @@ https://marlinfw.org/meta/gcode/
 ```
 
 ​	3D打印机获取温度有两种形式，一种可以是专门开一个3-4s的定时器，定时发送M105命令给3D打印机，这样3D打印机收到M105指令后，会返回温度数据。而Marlin官方并不建议采用这样的方式来获取温度，而是建议发送M155指令来让温度自动上报。因此，我们可以使用M155指令来避免这个问题，前提是3D打印机固件程序开启了AUTO_REPORT_TEMPRATURES宏，否则，我们就需要去修改3D打印机固件，以支持温度自动定时上报命令。使用方法如下图3-6所示:
-![a07e6fdf9163ed5d06b8732488f7e224.png](https://img-blog.csdnimg.cn/img_convert/a07e6fdf9163ed5d06b8732488f7e224.png)
+![](assets/pic14.png)
 
 ​														图3-6、Marlin自动获取温度上报命令
 
@@ -524,8 +512,7 @@ if (tos_tf_module_mqtt_state_get(&state) != -1)
 ```
 
 ​	当服务器连接成功以后，接下来设备端需要订阅服务器的Topic，这样设备端才能够收到服务器下发的控制指令。当前，对于物模型设备，腾讯IoT explorer提供了三类Topic类型如下图3-7所示，分别是物模型Topic、系统级Topic以及自定义Topic:
-
-![ce6d6060e469c743e196d409823a1a39.png](https://img-blog.csdnimg.cn/img_convert/ce6d6060e469c743e196d409823a1a39.png)
+![](assets/pic15.png)
 
 ​																		图3-7、物模型Topic
 
@@ -659,7 +646,7 @@ void MessageParamsHandler(mqtt_message_t* msg)
 
 对3D打印机的控制则取的是printing_control属性，这块是由Iot Explorer的物模型JSON脚本决定的，此部分会在后续平台对接部分进行介绍，如下图3-8所示：
 
-![f9e8ca4511102515000877c790c7468e.png](https://img-blog.csdnimg.cn/img_convert/f9e8ca4511102515000877c790c7468e.png)
+![](assets/pic16.png)
 
 ​																			图3-8、物模型JSON
 
@@ -871,23 +858,23 @@ void GCode_Send(char *str)
 ###### 4.1.1、硬件原理图与板载硬件熟悉
 **(1)硬件原理图**
 
-![d3389a5b0e0cc6cb7f3473bff442ea06.png](https://img-blog.csdnimg.cn/img_convert/d3389a5b0e0cc6cb7f3473bff442ea06.png)
+![](assets/pic17.png)
 
 ​														图4-1、串口切换电路以及WIFI网络电路图
 
 **(2)开发板实物所对应的管脚位置图**
 
-![afdb6e68a492c5f784f7deb20dbfa2d7.png](https://img-blog.csdnimg.cn/img_convert/afdb6e68a492c5f784f7deb20dbfa2d7.png)
+![](assets/pic18.png)
 
 ​												图4-2、串口切换电路图对应实际硬件上的具体位置
 
-![6368af89af4aba3a6dcf8988054df1c2.png](https://img-blog.csdnimg.cn/img_convert/6368af89af4aba3a6dcf8988054df1c2.png)
+![](assets/pic19.png)
 
 ​												图4-3、WIFI网络电路图对应实际硬件上的具体位置
 
 **(3)将开发板与PC连接**
 
-![09766c91adf3675f8672ffdd5bfb560b.png](https://img-blog.csdnimg.cn/img_convert/09766c91adf3675f8672ffdd5bfb560b.png)
+![](assets/pic20.png)
 
 ​														图4-4、将开发板与电脑的USB口进行连接
 
@@ -895,19 +882,19 @@ void GCode_Send(char *str)
 
 **(1)打开ESP8266固件烧录软件**
 
-![ee594375d2f03dd4c0d58354ae0fe00c.png](https://img-blog.csdnimg.cn/img_convert/ee594375d2f03dd4c0d58354ae0fe00c.png)
+![](assets/pic21.png)
 
 ​																		图4-5、ESP8266烧录软件
 
 **(2)设置ESP8266固件烧录参数并开始烧录软件**
 
-![8f6f42920b1a3bb49147d39e1090a8f1.png](https://img-blog.csdnimg.cn/img_convert/8f6f42920b1a3bb49147d39e1090a8f1.png)
+![](assets/pic22.png)
 
 ​												图4-6、ESP8266烧录软件参数设置以及开始烧录
 
 ​	如图4-6所示，烧录成功。烧录成功后需要将H5口跳线帽短接回3.3V处，如图4-7所示，将ESP8266设置为正常模式：
 
-![04711e1c20ea8c606401931a0d95cc7f.png](https://img-blog.csdnimg.cn/img_convert/04711e1c20ea8c606401931a0d95cc7f.png)
+![](assets/pic23.png)
 
 ​																	图4-7、切换为正常模式
 
@@ -915,29 +902,29 @@ void GCode_Send(char *str)
 
 ​    打开TencentOS Tiny RISC-V IoT训练营资料中的腾讯云wifi固件里的腾讯云IoT-AT指令集，如图4-8所示：
 
-![ccfee6ba5c14e52ff4f3a47c750e82f7.png](https://img-blog.csdnimg.cn/img_convert/ccfee6ba5c14e52ff4f3a47c750e82f7.png)
+![](assets/pic24.png)
 
 ​																	图4-8、腾讯云IoT-AT指令集手册
 
 ​	打开串口调试软件，发送AT+TCMODULE指令，这里我用的是SSCOM5.13软件：
 
-![a6b13468def35452ed16b7fbc710fe95.png](https://img-blog.csdnimg.cn/img_convert/a6b13468def35452ed16b7fbc710fe95.png)
+![](assets/pic25.png)
 
 ​																图4-9、ESP8266模组信息回复
 
 ​	如上图4-9所示，能看到指令回复的模组信息则代表腾讯云固件已经成功烧录在ESP8266 WIFI模块中了。如果需要通过PC测试WIFI模块，则如下图4-10所示进行连接，这样连接电脑串口软件，默认情况下上电打印的是WIFI模块的LOG信息：
 
-![a4de31622fc1d25c2dc554662f1c1294.png](https://img-blog.csdnimg.cn/img_convert/a4de31622fc1d25c2dc554662f1c1294.png)
+![](assets/pic26.png)
 
 ​															图4-10、ESP8266 PC端AT交互模式
 
  	如果需要通过MCU串口与WIFI连接进行通信，则如下图4-11所示进行连接，这样连接电脑串口软件，默认情况下上电打印的是MCU的LOG信息：
 
-![4db0d9b57ad3bbd6bc850b229c167643.png](https://img-blog.csdnimg.cn/img_convert/4db0d9b57ad3bbd6bc850b229c167643.png)
+![](assets/pic27.png)
 
 ​																图4-11、ESP8266与MCU连接
 
-![da6c5959c8803ec82fa2e43e8867a5d6.png](https://img-blog.csdnimg.cn/img_convert/da6c5959c8803ec82fa2e43e8867a5d6.png)
+![](assets/pic28.png)
 
 ​															图4-12、ESP8266连接MCU串口图
 
@@ -1136,25 +1123,25 @@ https://mp.weixin.qq.com/s/t8iVaypA1BtZwt7EEkAWyw
 
 将模板导入平台后，就可以和设备平台进行交互了。
 
-![7a366d7b090dd7f3a52eac2573ecd443.png](https://img-blog.csdnimg.cn/img_convert/7a366d7b090dd7f3a52eac2573ecd443.png)
+![](assets/pic29.png)
 
 ​														图4-13、数据模板导入IoT explorer平台
 
 接下来配置相应的小程序功能，如下图4-14所示：
 
-![bcb501e5abb94e81c1628bd4038b6232.png](https://img-blog.csdnimg.cn/img_convert/bcb501e5abb94e81c1628bd4038b6232.png)
+![](assets/pic30.png)
 
 ​																			图4-14、配置小程序
 
 **(1)产品显示配置**
 
-![18e7ea4c74a1cad8f872482324765b58.png](https://img-blog.csdnimg.cn/img_convert/18e7ea4c74a1cad8f872482324765b58.png)
+![](assets/pic31.png)
 
 ​																			图4-15、产品显示配置
 
 **(2)快捷入口配置**
 
-![329dd926ab7f6eca49bf8c0c8afe97c3.png](https://img-blog.csdnimg.cn/img_convert/329dd926ab7f6eca49bf8c0c8afe97c3.png)
+![](assets/pic32.png)
 
 ​																			图4-16、快捷入口配置
 
@@ -1162,13 +1149,13 @@ https://mp.weixin.qq.com/s/t8iVaypA1BtZwt7EEkAWyw
 
 ​    如下图4-17所示，这里我用的是可视化编辑面板来进行开发：
 
-![dea6cb51f9a5fe316b0a46250ba55491.png](https://img-blog.csdnimg.cn/img_convert/dea6cb51f9a5fe316b0a46250ba55491.png)
+![](assets/pic33.png)
 
 ​																		图4-17、可视化编辑面板
 
 ​    可视化编辑面板的操作十分简单，即使不需要文档学习，也能够很快上手，如下图4-18所示：
 
-![5c7520747a2520908fe175708a143499.png](https://img-blog.csdnimg.cn/img_convert/5c7520747a2520908fe175708a143499.png)
+![](assets/pic34.png)
 
 ​																	图4-18、可视化编辑模板介绍
 
@@ -1176,13 +1163,13 @@ https://mp.weixin.qq.com/s/t8iVaypA1BtZwt7EEkAWyw
 
 这里我选择的是乐鑫+Smart Config的方式：
 
-![94524b40ec73fffda73cf5117a4c5271.png](https://img-blog.csdnimg.cn/img_convert/94524b40ec73fffda73cf5117a4c5271.png)
+![](assets/pic35.png)
 
 ​																			图4-18、配网方式配置
 
 然后点击保存进入配网引导页的设计，如下图4-19所示：
 
-![2a8198584b3fe803a03055a951b4a57c.png](https://img-blog.csdnimg.cn/img_convert/2a8198584b3fe803a03055a951b4a57c.png)
+![](assets/pic36.png)
 
 ​																			图4-19、配网引导页
 
@@ -1220,7 +1207,7 @@ https://cloud.tencent.com/developer/article/2061046
 
  当设备进入配网模式后，会显示该二维码，用手机扫描二维码以后，根据嵌入式平台上的程序以及小程序上的提示逻辑进行WIFI配网，如图4-23所示:
 
-![ce28eaaa82ff075e1bea8f969769bff7.jpeg](https://img-blog.csdnimg.cn/img_convert/ce28eaaa82ff075e1bea8f969769bff7.jpeg)
+![](assets/pic37.png)
 
 ​																		图4-23、WIFI配网流程
 
@@ -1228,23 +1215,24 @@ https://cloud.tencent.com/developer/article/2061046
 
 ​    此部分是为了实现腾讯连连公众号和腾讯连连小程序的告警功能，如下图4-24所示，总共配置了两个数据流，分别是喷头移动、喷头温度过高：
 
-![190c30764886391e884cc60f1bbb1e79.png](https://img-blog.csdnimg.cn/img_convert/190c30764886391e884cc60f1bbb1e79.png)
+![](assets/pic38.png)
 
-​																			图4-24、数据流配置
+                  图4-24、数据流配置
 
 ​    以数据流-喷头温度过高为例。我们这里需要获取设备数据来源，设备数据的输入来源直接来源于设备数据属性，它与前面的数据模板里的属性数据是一一对应的关系，如下图4-25所示：
+![](assets/pic39.png)
 
-![6fe2024d17bd800bae50522299acae36.png](https://img-blog.csdnimg.cn/img_convert/6fe2024d17bd800bae50522299acae36.png)																	图4-25、数据流输入节点配置
+              图4-25、数据流输入节点配置
 
 ​    有了输入，当然要有输出吧，这里我们可以增加处理条件，也可以直接输出，这里我采用的是直接输出的方式，将数据直接推送到腾讯连连小程序APP以及公众号上，如下图4-26所示:
 
-![0cec7fafa44bdc363de0efc573d3ee97.png](https://img-blog.csdnimg.cn/img_convert/0cec7fafa44bdc363de0efc573d3ee97.png)
+![](assets/pic40.png)
 
 ​																	图4-25、数据流输出详细配置
 
 当特定条件触发时，以喷头移动为例，显示效果如下图4-26所示：
 
-![ac97e379223c5f8a7c48c65a6814c89b.jpeg](https://img-blog.csdnimg.cn/img_convert/ac97e379223c5f8a7c48c65a6814c89b.jpeg)
+![](assets/pic41.png)
 
 ​																		图4-26、设备告警显示效果
 
@@ -1260,7 +1248,9 @@ https://cloud.tencent.com/developer/article/2061046
 
 ​	这是一个全平台的TencentOS Tiny 3D打印机云控制系统方案，包括基于腾讯云IoT Explorer物联网平台、腾讯连连小程序以及3D打印控制系统固件的开发，该方案作为本年度腾讯AIoT开发者成长激励计划的参赛项目，其整体架构设计如下图所示：
 
-![ae6b86d6b42ab9909f8eb819dca7c7fb.png](https://img-blog.csdnimg.cn/img_convert/ae6b86d6b42ab9909f8eb819dca7c7fb.png)	该项目分为TencentCloud IoT Explorer、APP、Common、Operating System、Hardware、Bsp、McuPlatform这几个部分，每个部分的功能如下：
+![](assets/pic42.png)
+
+该项目分为TencentCloud IoT Explorer、APP、Common、Operating System、Hardware、Bsp、McuPlatform这几个部分，每个部分的功能如下：
 
 **1、TencentCloud IoT Explorer**
 
@@ -1314,5 +1304,3 @@ Anycubic 3D打印机Vyper固件。
 2. 新建 Feat_xxx 分支
 3. 提交代码
 4. 新建 Pull Request
-
-test
